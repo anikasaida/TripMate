@@ -1,0 +1,389 @@
+{
+  "entities": {
+    "UserProfile": {
+      "title": "UserProfile",
+      "description": "Authenticated user profile and preferences",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "displayName": { "type": "string", "minLength": 1, "maxLength": 120 },
+        "email": { "type": "string", "minLength": 3, "maxLength": 254 },
+        "photoURL": { "type": "string", "maxLength": 1000 },
+        "role": { "type": "string", "enum": ["USER", "ADMIN"] },
+        "currency": { "type": "string", "enum": ["USD", "BDT", "EUR", "GBP", "AUD", "CAD", "JPY"] },
+        "bio": { "type": "string", "maxLength": 500 },
+        "homeCity": { "type": "string", "maxLength": 120 },
+        "notificationPrefs": { "type": "object" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["uid", "displayName", "email", "role", "createdAt", "updatedAt"]
+    },
+    "AdminRecord": {
+      "title": "AdminRecord",
+      "description": "Trusted server-managed admin marker",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "email": { "type": "string", "maxLength": 254 },
+        "grantedBy": { "type": "string", "maxLength": 128 },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["uid", "email", "createdAt"]
+    },
+    "Trip": {
+      "title": "Trip",
+      "description": "Core trip record owned by a user with optional collaborative members",
+      "type": "object",
+      "properties": {
+        "ownerId": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "memberIds": { "type": "array" },
+        "pendingInviteEmails": { "type": "array" },
+        "tripName": { "type": "string", "minLength": 1, "maxLength": 140 },
+        "destination": { "type": "string", "minLength": 1, "maxLength": 120 },
+        "country": { "type": "string", "minLength": 1, "maxLength": 100 },
+        "startDate": { "type": "string", "minLength": 8, "maxLength": 32 },
+        "endDate": { "type": "string", "minLength": 8, "maxLength": 32 },
+        "travelersCount": { "type": "number" },
+        "tripType": { "type": "string", "enum": ["Solo Travel", "Family Trip", "Friends Trip", "Couple Trip", "Business Trip", "Adventure Trip", "Educational Trip", "Weekend Trip"] },
+        "estimatedBudget": { "type": "number" },
+        "currency": { "type": "string", "enum": ["USD", "BDT", "EUR", "GBP", "AUD", "CAD", "JPY"] },
+        "description": { "type": "string", "maxLength": 2000 },
+        "coverImage": { "type": "string", "maxLength": 1000 },
+        "status": { "type": "string", "enum": ["Upcoming", "Ongoing", "Completed"] },
+        "archived": { "type": "boolean" },
+        "lat": { "type": "number" },
+        "lng": { "type": "number" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["ownerId", "memberIds", "tripName", "destination", "country", "startDate", "endDate", "travelersCount", "tripType", "estimatedBudget", "currency", "status", "archived", "createdAt", "updatedAt"]
+    },
+    "TripMember": {
+      "title": "TripMember",
+      "description": "Collaborative member record on a trip",
+      "type": "object",
+      "properties": {
+        "tripId": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "userId": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "displayName": { "type": "string", "minLength": 1, "maxLength": 120 },
+        "email": { "type": "string", "maxLength": 254 },
+        "role": { "type": "string", "enum": ["Owner", "Editor", "Viewer"] },
+        "joinedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["tripId", "userId", "displayName", "role", "joinedAt"]
+    },
+    "Destination": {
+      "title": "Destination",
+      "description": "Curated or user-contributed travel destination",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string", "minLength": 1, "maxLength": 120 },
+        "country": { "type": "string", "minLength": 1, "maxLength": 100 },
+        "category": { "type": "string", "enum": ["Beaches", "Mountains", "Nature", "Historical Places", "Adventure", "Shopping", "Restaurants", "Cultural Attractions", "Museums", "Parks"] },
+        "description": { "type": "string", "minLength": 1, "maxLength": 2000 },
+        "imageUrl": { "type": "string", "maxLength": 1000 },
+        "lat": { "type": "number" },
+        "lng": { "type": "number" },
+        "bestSeason": { "type": "string", "maxLength": 120 },
+        "highlights": { "type": "array" },
+        "isSampleData": { "type": "boolean" },
+        "createdBy": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["name", "country", "category", "description", "isSampleData", "createdBy", "createdAt", "updatedAt"]
+    },
+    "SavedDestination": {
+      "title": "SavedDestination",
+      "description": "User favorite or wishlist destination",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "destinationId": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "destinationName": { "type": "string", "minLength": 1, "maxLength": 120 },
+        "country": { "type": "string", "minLength": 1, "maxLength": 100 },
+        "category": { "type": "string", "maxLength": 60 },
+        "imageUrl": { "type": "string", "maxLength": 1000 },
+        "lat": { "type": "number" },
+        "lng": { "type": "number" },
+        "notes": { "type": "string", "maxLength": 500 },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "destinationId", "destinationName", "country", "createdAt"]
+    },
+    "PackingItem": {
+      "title": "PackingItem",
+      "description": "Item inside a trip's smart packing checklist",
+      "type": "object",
+      "properties": {
+        "tripId": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "ownerId": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "memberIds": { "type": "array" },
+        "name": { "type": "string", "minLength": 1, "maxLength": 120 },
+        "category": { "type": "string", "minLength": 1, "maxLength": 80 },
+        "quantity": { "type": "number" },
+        "priority": { "type": "string", "enum": ["Essential", "High", "Medium", "Low"] },
+        "isPacked": { "type": "boolean" },
+        "notes": { "type": "string", "maxLength": 400 },
+        "aiSuggested": { "type": "boolean" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["tripId", "ownerId", "memberIds", "name", "category", "quantity", "priority", "isPacked", "createdAt", "updatedAt"]
+    },
+    "PackingTemplate": {
+      "title": "PackingTemplate",
+      "description": "Reusable packing template by trip type",
+      "type": "object",
+      "properties": {
+        "ownerId": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "name": { "type": "string", "minLength": 1, "maxLength": 120 },
+        "tripType": { "type": "string", "maxLength": 60 },
+        "items": { "type": "array" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["ownerId", "name", "tripType", "items", "createdAt", "updatedAt"]
+    },
+    "Activity": {
+      "title": "Activity",
+      "description": "Daily itinerary activity within a trip",
+      "type": "object",
+      "properties": {
+        "tripId": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "ownerId": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "memberIds": { "type": "array" },
+        "date": { "type": "string", "minLength": 8, "maxLength": 32 },
+        "startTime": { "type": "string", "maxLength": 16 },
+        "endTime": { "type": "string", "maxLength": 16 },
+        "title": { "type": "string", "minLength": 1, "maxLength": 140 },
+        "location": { "type": "string", "maxLength": 160 },
+        "description": { "type": "string", "maxLength": 1000 },
+        "estimatedCost": { "type": "number" },
+        "transportation": { "type": "string", "maxLength": 120 },
+        "notes": { "type": "string", "maxLength": 500 },
+        "orderIndex": { "type": "number" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["tripId", "ownerId", "memberIds", "date", "startTime", "endTime", "title", "estimatedCost", "orderIndex", "createdAt", "updatedAt"]
+    },
+    "Expense": {
+      "title": "Expense",
+      "description": "Trip budget and expense record",
+      "type": "object",
+      "properties": {
+        "tripId": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "ownerId": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "memberIds": { "type": "array" },
+        "title": { "type": "string", "minLength": 1, "maxLength": 140 },
+        "category": { "type": "string", "enum": ["Transportation", "Accommodation", "Food", "Shopping", "Tickets", "Entertainment", "Emergency", "Other"] },
+        "estimatedAmount": { "type": "number" },
+        "actualAmount": { "type": "number" },
+        "currency": { "type": "string", "enum": ["USD", "BDT", "EUR", "GBP", "AUD", "CAD", "JPY"] },
+        "date": { "type": "string", "maxLength": 32 },
+        "paidBy": { "type": "string", "maxLength": 120 },
+        "notes": { "type": "string", "maxLength": 500 },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["tripId", "ownerId", "memberIds", "title", "category", "estimatedAmount", "actualAmount", "currency", "date", "createdAt", "updatedAt"]
+    },
+    "TravelDocument": {
+      "title": "TravelDocument",
+      "description": "Secure travel document record and file pointer",
+      "type": "object",
+      "properties": {
+        "tripId": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "ownerId": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "memberIds": { "type": "array" },
+        "title": { "type": "string", "minLength": 1, "maxLength": 140 },
+        "category": { "type": "string", "enum": ["Flight Ticket", "Bus Ticket", "Train Ticket", "Hotel Booking", "Confirmation", "Contact", "Other"] },
+        "referenceNumber": { "type": "string", "maxLength": 120 },
+        "contactInfo": { "type": "string", "maxLength": 200 },
+        "notes": { "type": "string", "maxLength": 600 },
+        "fileId": { "type": "string", "maxLength": 128 },
+        "fileName": { "type": "string", "maxLength": 200 },
+        "mimeType": { "type": "string", "maxLength": 100 },
+        "fileSize": { "type": "number" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["tripId", "ownerId", "memberIds", "title", "category", "createdAt", "updatedAt"]
+    },
+    "Notification": {
+      "title": "Notification",
+      "description": "User travel alert and reminder",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "tripId": { "type": "string", "maxLength": 128 },
+        "type": { "type": "string", "enum": ["TripReminder", "PackingReminder", "MissingEssential", "ActivityUpcoming", "BudgetWarning", "BookingReminder", "TripInvitation"] },
+        "title": { "type": "string", "minLength": 1, "maxLength": 140 },
+        "message": { "type": "string", "minLength": 1, "maxLength": 500 },
+        "isRead": { "type": "boolean" },
+        "actionUrl": { "type": "string", "maxLength": 200 },
+        "dedupeKey": { "type": "string", "maxLength": 160 },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "type", "title", "message", "isRead", "createdAt"]
+    },
+    "Invitation": {
+      "title": "Invitation",
+      "description": "Collaborative trip invitation",
+      "type": "object",
+      "properties": {
+        "tripId": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "tripName": { "type": "string", "minLength": 1, "maxLength": 140 },
+        "inviterId": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "inviterName": { "type": "string", "maxLength": 120 },
+        "inviteeEmail": { "type": "string", "minLength": 3, "maxLength": 254 },
+        "role": { "type": "string", "enum": ["Editor", "Viewer"] },
+        "status": { "type": "string", "enum": ["Pending", "Accepted", "Rejected"] },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["tripId", "tripName", "inviterId", "inviteeEmail", "role", "status", "createdAt", "updatedAt"]
+    },
+    "DestinationVote": {
+      "title": "DestinationVote",
+      "description": "Collaborative destination voting item within a trip",
+      "type": "object",
+      "properties": {
+        "tripId": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "ownerId": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "memberIds": { "type": "array" },
+        "destinationName": { "type": "string", "minLength": 1, "maxLength": 140 },
+        "country": { "type": "string", "maxLength": 100 },
+        "notes": { "type": "string", "maxLength": 400 },
+        "voterIds": { "type": "array" },
+        "proposedBy": { "type": "string", "maxLength": 120 },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["tripId", "ownerId", "memberIds", "destinationName", "voterIds", "createdAt", "updatedAt"]
+    },
+    "TripNote": {
+      "title": "TripNote",
+      "description": "Collaborative trip planning note",
+      "type": "object",
+      "properties": {
+        "tripId": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "ownerId": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "memberIds": { "type": "array" },
+        "title": { "type": "string", "minLength": 1, "maxLength": 140 },
+        "content": { "type": "string", "minLength": 1, "maxLength": 4000 },
+        "authorId": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "authorName": { "type": "string", "maxLength": 120 },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["tripId", "ownerId", "memberIds", "title", "content", "authorId", "createdAt", "updatedAt"]
+    },
+    "JournalEntry": {
+      "title": "JournalEntry",
+      "description": "Trip journal memory entry",
+      "type": "object",
+      "properties": {
+        "tripId": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "ownerId": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "memberIds": { "type": "array" },
+        "title": { "type": "string", "minLength": 1, "maxLength": 140 },
+        "content": { "type": "string", "minLength": 1, "maxLength": 5000 },
+        "destination": { "type": "string", "maxLength": 120 },
+        "travelDate": { "type": "string", "maxLength": 32 },
+        "photos": { "type": "array" },
+        "mood": { "type": "string", "maxLength": 40 },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["tripId", "ownerId", "memberIds", "title", "content", "travelDate", "createdAt", "updatedAt"]
+    },
+    "Report": {
+      "title": "Report",
+      "description": "Content moderation report reviewed by admins",
+      "type": "object",
+      "properties": {
+        "reporterId": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "targetType": { "type": "string", "enum": ["destination", "note", "journal", "other"] },
+        "targetId": { "type": "string", "minLength": 1, "maxLength": 128 },
+        "reason": { "type": "string", "minLength": 1, "maxLength": 600 },
+        "status": { "type": "string", "enum": ["Open", "Resolved", "Dismissed"] },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["reporterId", "targetType", "targetId", "reason", "status", "createdAt", "updatedAt"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": { "$ref": "#/entities/UserProfile" },
+      "description": "Private user profiles isolated to the owner and admins"
+    },
+    "/admins/{userId}": {
+      "schema": { "$ref": "#/entities/AdminRecord" },
+      "description": "Trusted admin registry managed exclusively by existing admins"
+    },
+    "/trips/{tripId}": {
+      "schema": { "$ref": "#/entities/Trip" },
+      "description": "User trips and shared collaborator access list"
+    },
+    "/trips/{tripId}/members/{memberId}": {
+      "schema": { "$ref": "#/entities/TripMember" },
+      "description": "Role-based trip member records governed by parent trip ownership"
+    },
+    "/destinations/{destinationId}": {
+      "schema": { "$ref": "#/entities/Destination" },
+      "description": "Public travel destination catalog and user-submitted spots"
+    },
+    "/savedDestinations/{savedId}": {
+      "schema": { "$ref": "#/entities/SavedDestination" },
+      "description": "User favorite and wishlist destinations"
+    },
+    "/packingItems/{itemId}": {
+      "schema": { "$ref": "#/entities/PackingItem" },
+      "description": "Packing checklist items linked to a trip"
+    },
+    "/packingTemplates/{templateId}": {
+      "schema": { "$ref": "#/entities/PackingTemplate" },
+      "description": "Reusable packing templates owned by a user"
+    },
+    "/activities/{activityId}": {
+      "schema": { "$ref": "#/entities/Activity" },
+      "description": "Daily itinerary activities linked to a trip"
+    },
+    "/expenses/{expenseId}": {
+      "schema": { "$ref": "#/entities/Expense" },
+      "description": "Budget and expense entries linked to a trip"
+    },
+    "/travelDocuments/{docId}": {
+      "schema": { "$ref": "#/entities/TravelDocument" },
+      "description": "Travel bookings, confirmations, and private file metadata"
+    },
+    "/notifications/{notificationId}": {
+      "schema": { "$ref": "#/entities/Notification" },
+      "description": "In-app notifications owned by the recipient user"
+    },
+    "/invitations/{invitationId}": {
+      "schema": { "$ref": "#/entities/Invitation" },
+      "description": "Collaborative trip invitations sent by trip owners"
+    },
+    "/destinationVotes/{voteId}": {
+      "schema": { "$ref": "#/entities/DestinationVote" },
+      "description": "Collaborative destination voting items for a trip"
+    },
+    "/tripNotes/{noteId}": {
+      "schema": { "$ref": "#/entities/TripNote" },
+      "description": "Collaborative planning notes for a trip"
+    },
+    "/journalEntries/{entryId}": {
+      "schema": { "$ref": "#/entities/JournalEntry" },
+      "description": "Travel journal memories linked to a trip"
+    },
+    "/reports/{reportId}": {
+      "schema": { "$ref": "#/entities/Report" },
+      "description": "User-submitted moderation reports for admin review"
+    }
+  }
+}
