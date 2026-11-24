@@ -6,6 +6,7 @@ import {
   Loader2,
   Check,
   X,
+  RotateCcw,
 } from 'lucide-react';
 import { WorkspaceLayout } from '../components/Layout/WorkspaceLayout';
 import { useTripData } from '../contexts/TripDataContext';
@@ -16,6 +17,8 @@ import { addActivity } from '../services/firestoreService';
 interface ChatMessage {
   role: 'user' | 'model';
   text: string;
+  isError?: boolean;
+  retryPrompt?: string;
 }
 
 interface GeneratedItineraryItem {
@@ -63,19 +66,27 @@ export const AiAssistantPage: React.FC = () => {
   const [draftActivities, setDraftActivities] = useState<GeneratedItineraryItem[]>([]);
   const [savingPlan, setSavingPlan] = useState(false);
 
-  const sendMessage = async (promptText: string) => {
+  const sendMessage = async (promptText: string, isRetry = false) => {
     const trimmed = promptText.trim();
     if (!trimmed || sending) return;
 
-    const nextHistory = [...messages, { role: 'user' as const, text: trimmed }];
-    setMessages(nextHistory);
-    setInput('');
+    const cleanHistory = messages
+      .filter((m) => !m.isError)
+      .slice(-8)
+      .map((m) => ({ role: m.role, text: m.text }));
+
+    if (isRetry) {
+      setMessages((prev) => prev.filter((m) => !m.isError));
+    } else {
+      setMessages((prev) => [...prev, { role: 'user' as const, text: trimmed }]);
+      setInput('');
+    }
     setSending(true);
 
     try {
       const res = await apiClient.post<{ reply: string }>('/ai/chat', {
         message: trimmed,
-        history: messages.slice(-8),
+        history: cleanHistory,
         tripContext: selectedTrip
           ? {
               tripName: selectedTrip.tripName,
@@ -99,7 +110,12 @@ export const AiAssistantPage: React.FC = () => {
       showToast(msg, 'error');
       setMessages((prev) => [
         ...prev,
-        { role: 'model', text: `Assistant notice: ${msg}` },
+        {
+          role: 'model',
+          text: msg,
+          isError: true,
+          retryPrompt: trimmed,
+        },
       ]);
     } finally {
       setSending(false);
@@ -267,10 +283,23 @@ export const AiAssistantPage: React.FC = () => {
                   className={`max-w-[85%] rounded-xl px-4 py-3 text-sm leading-relaxed whitespace-pre-wrap ${
                     msg.role === 'user'
                       ? 'bg-[#0D7377] text-white'
+                      : msg.isError
+                      ? 'bg-amber-50 border border-amber-200 text-amber-950'
                       : 'bg-[#F8FAFC] border border-slate-200 text-slate-800'
                   }`}
                 >
-                  {msg.text}
+                  <p>{msg.text}</p>
+                  {msg.isError && msg.retryPrompt && (
+                    <button
+                      type="button"
+                      onClick={() => sendMessage(msg.retryPrompt!, true)}
+                      disabled={sending}
+                      className="mt-2.5 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#0B1D33] text-white text-xs font-medium hover:bg-slate-800 disabled:opacity-50"
+                    >
+                      <RotateCcw className="h-3.5 w-3.5" />
+                      Retry Request
+                    </button>
+                  )}
                 </div>
               </div>
             ))}
